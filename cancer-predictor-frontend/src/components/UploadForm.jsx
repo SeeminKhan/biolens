@@ -1,8 +1,9 @@
-// UploadForm.js
-import React, { useState } from "react";
-import { AiOutlineUpload, AiOutlineInfoCircle } from "react-icons/ai";
+import { useState } from "react";
+import React from "react";
+import axios from "axios";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
-export default function UploadForm({ setResultData }) {
+export default function UploadForm({ setResultData, setLoading }) {
   const [file, setFile] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -11,51 +12,35 @@ export default function UploadForm({ setResultData }) {
 
     const formData = new FormData();
     formData.append("file", file);
+    setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/predict", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      setResultData(data);
+      const res = await axios.post("http://localhost:8000/predict", formData);
+      setResultData(res.data);
     } catch (error) {
       alert("Error uploading file");
       console.error(error);
+      setResultData(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col items-center w-full max-w-md bg-[#1b263b] p-6 rounded-xl shadow-lg"
-      style={{ boxShadow: "0 6px 20px rgba(65, 90, 119, 0.6)" }}
-    >
-      <label
-        htmlFor="file-upload"
-        className="cursor-pointer flex items-center space-x-2 px-4 py-2 border-2 border-dashed border-[#778da9] rounded-lg text-[#e0e1dd] hover:bg-[#415a77] transition-colors w-full justify-center"
-      >
-        <AiOutlineUpload size={24} />
-        <span>{file ? file.name : "Choose TSV File to Upload"}</span>
-      </label>
+    <form onSubmit={handleSubmit} className="bg-[#1b263b] p-6 rounded-xl shadow-lg w-full max-w-xl text-center">
       <input
-        id="file-upload"
         type="file"
-        accept=".tsv,.txt"
+        accept=".tsv,text/tab-separated-values"
         onChange={(e) => setFile(e.target.files[0])}
-        className="hidden"
+        className="file-input rounded file-input-bordered w-full bg-[#778da9] text-black file:bg-[#415a77] file:border-none file:text-white file:font-medium"
       />
-
       <button
         type="submit"
-        className="mt-6 bg-[#415a77] hover:bg-[#778da9] transition-colors text-[#e0e1dd] font-semibold px-6 py-2 rounded-lg shadow-md"
+        className="mt-4 bg-[#415a77] text-white px-6 py-2 rounded hover:bg-[#778da9] flex items-center justify-center gap-2 transition"
       >
+        <FaCloudUploadAlt className="text-xl" />
         Upload & Analyze
       </button>
-
-      <p className="mt-4 text-sm text-[#e0e1dd] flex items-center space-x-2 max-w-xs text-center">
-        <span>Upload a TSV file containing gene expression data.</span>
-      </p>
     </form>
   );
 }
