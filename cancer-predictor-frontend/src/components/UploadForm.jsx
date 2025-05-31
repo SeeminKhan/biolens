@@ -13,7 +13,7 @@ export default function UploadForm({ setResultData }) {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5000/api/analyze", {
+      const res = await fetch("http://localhost:8000/predict", {
         method: "POST",
         body: formData,
       });
